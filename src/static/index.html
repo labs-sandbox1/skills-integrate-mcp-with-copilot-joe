@@ -7,19 +7,38 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+
     <header>
       <h1>Mergington High School</h1>
       <h2>Extracurricular Activities</h2>
+      <div id="user-info" class="hidden">
+        <span id="welcome-user"></span>
+        <button id="logout-btn">Logout</button>
+      </div>
+      <button id="login-btn">Login</button>
     </header>
 
     <main>
+
       <section id="activities-container">
         <h3>Available Activities</h3>
         <div id="activities-list">
           <!-- Activities will be loaded here -->
           <p>Loading activities...</p>
         </div>
+        <div id="admin-actions" class="hidden">
+          <h4>Admin/Staff: Create New Activity</h4>
+          <form id="create-activity-form">
+            <input type="text" id="new-activity-name" placeholder="Activity Name" required />
+            <input type="text" id="new-activity-desc" placeholder="Description" required />
+            <input type="text" id="new-activity-schedule" placeholder="Schedule" required />
+            <input type="number" id="new-activity-max" placeholder="Max Participants" min="1" required />
+            <button type="submit">Create Activity</button>
+          </form>
+          <div id="admin-message" class="hidden"></div>
+        </div>
       </section>
+
 
       <section id="signup-container">
         <h3>Sign Up for an Activity</h3>
@@ -39,6 +58,19 @@
         </form>
         <div id="message" class="hidden"></div>
       </section>
+
+      <!-- Login Modal -->
+      <div id="login-modal" class="hidden" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;z-index:1000;">
+        <div style="background:white;padding:30px;border-radius:8px;min-width:300px;">
+          <h3>Login</h3>
+          <form id="login-form">
+            <input type="email" id="login-email" placeholder="Email" required style="width:100%;margin-bottom:10px;" />
+            <input type="password" id="login-password" placeholder="Password" required style="width:100%;margin-bottom:10px;" />
+            <button type="submit" style="width:100%;">Login</button>
+          </form>
+          <div id="login-error" class="error hidden"></div>
+        </div>
+      </div>
     </main>
 
     <footer>
