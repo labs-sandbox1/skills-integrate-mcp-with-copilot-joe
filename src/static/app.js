@@ -4,11 +4,114 @@ document.addEventListener("DOMContentLoaded", () => {
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
 
+    const loginBtn = document.getElementById("login-btn");
+    const logoutBtn = document.getElementById("logout-btn");
+    const userInfoDiv = document.getElementById("user-info");
+    const welcomeUser = document.getElementById("welcome-user");
+    const loginModal = document.getElementById("login-modal");
+    const loginForm = document.getElementById("login-form");
+    const loginError = document.getElementById("login-error");
+    const adminActions = document.getElementById("admin-actions");
+    const createActivityForm = document.getElementById("create-activity-form");
+    const adminMessage = document.getElementById("admin-message");
   // Function to fetch activities from API
+    // User state
+    let currentUser = null;
+    let currentRole = null;
   async function fetchActivities() {
+    // Helpers
+    function setUser(user, role) {
+      currentUser = user;
+      currentRole = role;
+      if (user) {
+        userInfoDiv.classList.remove("hidden");
+        welcomeUser.textContent = `Welcome, ${user}`;
+        loginBtn.classList.add("hidden");
+        if (role === "admin" || role === "staff") {
+          adminActions.classList.remove("hidden");
+        } else {
+          adminActions.classList.add("hidden");
+        }
+      } else {
+        userInfoDiv.classList.add("hidden");
+        loginBtn.classList.remove("hidden");
+        adminActions.classList.add("hidden");
+      }
+      // Hide signup if not logged in
+      document.getElementById("signup-container").style.display = user ? "block" : "none";
+      // Hide unregister buttons if not logged in
+      document.querySelectorAll(".delete-btn").forEach(btn => {
+        btn.style.display = user ? 'inline-block' : 'none';
+      });
+    }
     try {
+    function saveUserToStorage(name, role) {
+      localStorage.setItem("userName", name);
+      localStorage.setItem("userRole", role);
+    }
+    function clearUserFromStorage() {
+      localStorage.removeItem("userName");
+      localStorage.removeItem("userRole");
+    }
+    function loadUserFromStorage() {
+      const name = localStorage.getItem("userName");
+      const role = localStorage.getItem("userRole");
+      if (name && role) setUser(name, role);
+    }
       const response = await fetch("/activities");
+    // Show login modal
+    loginBtn.addEventListener("click", () => {
+      loginModal.classList.remove("hidden");
+      loginError.classList.add("hidden");
+      loginForm.reset();
+    });
+    // Hide modal on outside click
+    loginModal.addEventListener("click", (e) => {
+      if (e.target === loginModal) loginModal.classList.add("hidden");
+    });
+    // Logout
+    logoutBtn.addEventListener("click", async () => {
+      await fetch("/logout", { method: "POST", credentials: "include" });
+      setUser(null, null);
+      clearUserFromStorage();
+      messageDiv.textContent = "Logged out.";
+      messageDiv.className = "info";
+      messageDiv.classList.remove("hidden");
+      setTimeout(() => messageDiv.classList.add("hidden"), 3000);
+      fetchActivities();
+    });
       const activities = await response.json();
+    // Login form submit
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("login-email").value;
+      const password = document.getElementById("login-password").value;
+      try {
+        const response = await fetch("/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ email, password })
+        });
+        const result = await response.json();
+        if (response.ok) {
+          setUser(result.name, result.role);
+          saveUserToStorage(result.name, result.role);
+          loginModal.classList.add("hidden");
+          messageDiv.textContent = result.message;
+          messageDiv.className = "success";
+          messageDiv.classList.remove("hidden");
+          setTimeout(() => messageDiv.classList.add("hidden"), 3000);
+          fetchActivities();
+        } else {
+          loginError.textContent = result.detail || "Login failed.";
+          loginError.classList.remove("hidden");
+        }
+      } catch (err) {
+        loginError.textContent = "Login error.";
+        loginError.classList.remove("hidden");
+      }
+    });
 
       // Clear loading message
       activitiesList.innerHTML = "";
